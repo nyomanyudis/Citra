@@ -1,0 +1,19 @@
+//
+//  Calendar.h
+//  Ciptadana
+//
+//  Created by Reyhan on 6/9/14.
+//  Copyright (c) 2014 Reyhan. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface Calendar : NSObject
+
++ (NSString *)relativeDateStringForDate:(NSDate *)date;
++ (NSString *)relativeDateStringForDate:(NSDate *)date toDate:(NSDate *)todate;
+//+ (BOOL)isYesterdayForDate:(NSDate*)date;
+
++ (NSString *)currentStringDate;
+
+@end

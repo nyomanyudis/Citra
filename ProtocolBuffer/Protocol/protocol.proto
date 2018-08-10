@@ -1,0 +1,1584 @@
+
+option java_outer_classname = "Protocol";
+option optimize_for = SPEED; 
+
+enum DeviceType 
+{
+	DESKTOP = 0;
+	IPAD 	= 1;
+	IPHONE 	= 2;
+	ANDROID = 3;
+	BB	= 4;
+}
+
+
+
+enum StatusReturn
+{
+	NORESULT 		= 0;
+	RESULT 			= 1;
+	ERROR 			= 2;
+	SESSIONEXP 		= 3;
+	DOUBLELOGIN 	= 4;
+	UPDATEVERSION 	= 5;
+	FORCELOGOUT 	= 6;
+}	
+	
+enum UserLoginStatus 
+{
+	IS_LOGIN 				= 0;
+	IS_LOGOUT 				= 1;
+	IS_DOUBLE_LOGIN 		= 2;
+	IS_SESSION_EXP 			= 3;
+	IS_FORCE_LOGOUT_APP 	= 4;
+	IS_FORCE_LOGOUT_PRIV 	= 5;
+}
+
+
+	
+
+
+enum ChangePassword
+{
+	SUCCESS			= 0;
+	SESSION_EXPIRED = 1;
+	NOT_CORRECT		= 2;
+}	
+
+
+enum ServerType
+{
+	SYSTEM_ADMIN 	= 0;
+	TRADING_CHANNEL = 1;
+	MARKET_INFO 	= 2;
+	OMS 			= 3;
+	RISK 			= 4;
+	PROXY 			= 5;
+	MARTIN 			= 6;
+}
+
+enum Board 
+{
+	RG = 0;
+	TN = 1;
+	NG = 2;
+	RO = 3;
+	RF = 4;
+}	
+
+enum InvestorType
+{ 
+	D = 0;
+	F = 1;
+}
+
+enum Sort 
+{
+	OLDER = 0;
+	NEWER = 1;
+	NOW = 2;
+}
+
+enum OrderCommand
+{
+	BID = 0;
+	OFFER = 1;
+	CANCEL_AMEND_BID = 2;
+	CANCEL_AMEND_OFFER = 3;
+	ALL = 4;
+}
+
+enum TradeCommand
+{
+	MATCHED = 0;
+	WITHDRAWN = 1;
+}
+
+enum SecurityType
+{
+	ORDI = 0;
+	ORDI_PREOPEN = 1;
+	RGHI = 2;
+	WARI = 3;
+	MUTI = 4;		
+}
+	
+enum Status 
+{
+	ACTIVE = 0;
+	SUSPEND = 1;
+}
+
+enum OrderStatus 
+{
+	OPEN = 0;
+	PARTIAL = 1;
+	DONE = 2;
+	CANCEL = 3;	
+	AMMEND = 4;
+}
+	
+enum SuspendReleaseStatus
+{ 
+	SUSPENDED = 0;
+	RELEASED = 1;
+}
+
+enum Request 
+{
+	SUBSCRIBE = 0;
+	UNSUBSCRIBE = 1;
+	GET = 2;
+}
+
+enum RecordType 
+{ 		  		
+	IDX_TRADING_STATUS = 0; 
+	IDX_ORDER = 1; 
+	IDX_TRADE = 2;
+	IDX_STOCK_DATA = 3; 
+	IDX_BROKER_DATA = 4;
+	IDX_STOCK_SUMMARY = 5;
+	IDX_INDICES = 6;
+	IDX_SUSPEND_RELEASE_BROKER = 7;
+	IDX_SUSPEND_RELEASE_STOCK = 8;
+	IDX_NEWS_MESSAGE = 9; 
+	KI_TRADE = 10;		 	
+	KI_ORDER = 11;
+	KI_INDICES = 12;
+	KI_STOCK_DATA = 13;
+	KI_BROKER_DATA = 14;
+	KI_INDICES_DATA = 15;
+	KI_REGIONAL_INDICES_DATA = 16;
+	KI_CURRENCY_DATA = 17;
+	KI_REGIONAL_INDICES = 18;
+	KI_CURRENCY = 19;
+	LEVEL2 = 20;
+	ORDER_STATUS = 21;	 
+	STOCK_HISTORY = 22;
+	INDICES_HISTORY = 23;
+	BROKER_SUMMARY = 24;
+	STOCK_NETBUYSELL = 25;
+	BROKER_NETBUYSELL = 26;
+	FOREIGN_DOMESTIC = 27;
+	TRADE_DETAIL = 28;
+	ORDER_DETAIL = 29;		
+	KI_STOCK_SUMMARY = 30;	
+	KI_REQUEST = 31;
+	KI_LAST_TRADE = 32;
+	COMPARE_HISTORY = 33;
+	LEVEL3 = 34;
+	STOP_SIGNAL = 35;
+	ORDER_TRACKING = 36;
+	FUTURES = 37;
+	COMODITY = 38;
+	FD_SUMMARY = 39;		
+	STOCK_HIST_NETBUYSELL = 40;
+	BROKER_HIST_NETBUYSELL = 41;
+	FOREIGN_HISTORY = 42;				
+	MARKET_SUMMARY = 43;
+	KEY = 44;
+	WK52_104 = 45;
+	
+	IDX_CONTRACT_DATA = 46; 
+	IDX_CONTRACT_SUMMARY = 47;
+	IDX_MARKET_DEPTH = 48;
+	KI_CONTRACT_DATA = 49;
+	KI_CONTRACT_SUMMARY = 50;	
+	KI_DERIVATIVE_TRADE = 51;	
+	DERIVATIVE_LEVEL2 = 52;
+	DERIVATIVE_LEVEL3 = 53;
+	KI_LAST_DERIVATIVE_TRADE = 54;
+	IDX_DERIVATIVE_TRADE = 55;
+	
+	KI_TOP_BROKER_BY_FREQ = 56;
+	KI_TOP_BROKER_BY_VOL = 57;
+	KI_TOP_BROKER_BY_VAL = 58;
+	
+	KI_TOP_LOOSER = 59;
+	KI_TOP_GAINER = 60;
+	KI_TOP_ACTIVE = 61;
+	KI_TOP_VALUE = 62;
+	
+	
+
+
+	REQUEST = 100;
+		
+	M_PREVILLEGES 	= 101; 
+	M_ORDERSTATUS 	= 102;
+	M_ORDERTYPE 	= 103;
+	M_MENU 			= 104;
+
+	MARKET_CAPPING 		= 105;
+	SHARES_INFO 		= 106;
+	MESSAGE_BROADCAST 	= 107;
+	
+	LOGIN_MI 	= 108;
+	LOGIN_OL 	= 109;
+	CLIENT_LIST = 110;
+	LOGOUT_MI 	= 111;
+	LOGOUT_OL 	= 112;
+	CHANGE_PASSWORD 	 = 113;
+	CHANGE_PIN 			 = 114;
+	GET_STATUS_SESSION 	 = 115; 
+	UPDATE_SESSION_TRADE = 116; 
+	
+	GET_STOCK_IN_HAND 	= 117;
+	GET_PRIVILEGE_USER 	= 118;
+	GET_PORTFOLIO_ORDER = 119;
+	GET_ORDER_POWER 	= 120;
+	GET_AVAIABLE_STOCK 	= 121;
+	SEND_SUBMIT_ORDER 	= 122;
+	
+	GET_CUSTOMER_POSITION = 123;
+	GET_CUSTOMER_EXPOSURE = 124;
+	GET_ORDERS 			  = 125;
+	GET_TRADES 			  = 126;
+	GET_ORDER_LIFE_CYCLE  = 127;
+	GET_TRADES_DETAIL 	  = 128;
+	GET_ADV_LIST 	 	  = 129;
+	GET_NEGO_RECEIVED	  = 130;
+	GET_ACCOUNT_INFO 	  = 131;
+	GET_PORTFOLIO_LIST 	  = 132;
+	GET_PROFITLOSS 		  = 133;
+	GET_ORDER_GTC 		  = 134;
+	GET_MARGIN_ALERT 	  = 135;
+	GET_CASH_FLOW		  = 136;
+	GET_CASH_MUTATION	  = 137;
+	GET_CASH			  = 138;
+	SEND_CASH_MUTATION	  = 139;
+	
+	GET_GROUP_ORDER			= 140;
+	GET_GROUP_ORDER_DETAIL	= 141;
+	GET_CLIENT_OVERDUE		= 142;
+	GET_CUSTOMER_POSITION_PORTFOLIO  = 143;
+	LOGOUT_RESET 			= 144;
+	GET_HOLIDAY			= 145;
+	GET_M_BRANCH			= 146;
+	GET_M_USERLIST			= 147;
+	GET_STOCK_IN_HAND_CASH	= 148;
+	GET_CONDITIONAL_ORDERS     = 149;
+	GET_TRADING_TARGET     	= 150;
+	SEND_MULTIPLE_ORDER    	= 151;
+	GET_POTONGAN_PAJAK     	= 152;	
+	GET_CUSTOMER_POSITION_AVGPRICE_PORTFOLIO  = 153;
+	GET_RESEND_ORDERS   = 154;
+	GET_ORDERS_DRC  	= 155;
+	GET_ORDER_POWER_MATRIX 		= 156;
+	GET_AVAIABLE_STOCK_MATRIX 	= 157;
+	GET_RDN_LIST				= 158;
+	GET_ORDER_POWER_AND_RDN		= 159;
+	
+	SUBMIT_CASH_WITHDRAW		= 160;
+	GET_CASH_WITHDRAW			= 161;
+	
+	GET_CASH_WITHDRAW_LIST		= 162;
+	CHANGE_PIN_PASSWORD			= 163;
+}
+
+message IdxRecord
+{
+	optional int32 date = 1;
+	optional int32 time = 2;		
+	optional int32 sequence = 3;	
+	optional RecordType record_type = 4;	
+	optional IdxTradingStatus trading_status = 5;
+	optional IdxOrder order = 6;
+	optional IdxTrade trade = 7;
+	optional IdxStockData stock_data = 8;
+	optional IdxBrokerData broker_data = 9;
+	optional IdxStockSummary stock_summary = 10;
+	optional IdxIndices indices = 11;				
+	optional IdxSuspendReleaseBroker suspend_release_broker = 12;
+	optional IdxSuspendReleaseStock suspend_release_stock = 13;
+	optional IdxNewsMessage news_message = 14;
+	
+	optional IdxMarketDepth market_depth = 15;
+	optional IdxTrade derivative_trade = 16;
+	optional IdxContractData contract_data = 17;
+	optional IdxContractSummary contract_summary = 18;
+}
+
+message KiRecord
+{	
+	optional RecordType record_type = 1;			
+	repeated KiStockSummary stock_summary = 2;
+	repeated KiTrade trade = 3;
+	repeated KiOrder order = 4;
+	repeated KiIndices indices = 5;
+	repeated Level2 level_2	 = 6;
+	repeated Level3 level_3	 = 7;
+	repeated OrderStatus order_status = 8;	
+	repeated KiRegionalIndices regional_indices = 9;
+	repeated KiCurrency currency = 10;
+	repeated StockHistory stock_history = 11;
+	repeated IndicesHistory indices_history = 12;	
+	repeated Transaction broker_summary = 13;
+	optional NetBuySell stock_netbuysell = 14;
+	optional NetBuySell broker_netbuysell = 15;
+	repeated ForeignDomestic foreign_domestic = 16;
+	
+	repeated KiTradeDetail trade_detail = 17;
+	repeated KiOrderDetail order_detail = 18;	
+	repeated KiStockData stock_data = 19;
+	repeated KiBrokerData broker_data = 20;
+	repeated KiIndicesData indices_data = 21;
+	repeated KiRegionalIndicesData regional_indices_data = 22;
+	repeated KiCurrencyData currency_data = 23;	
+	repeated IdxSuspendReleaseBroker suspend_release_broker = 24;
+	repeated IdxSuspendReleaseStock suspend_release_stock = 25;
+	repeated IdxTradingStatus trading_status = 26;
+	optional KiRequest request = 27;
+	repeated KiTrade last_trade = 28;
+	repeated KiOrderDetail order_track = 29;	
+	repeated KiFuture future = 30;
+	repeated KiComodity comodity = 31;
+	optional FDSummary fdsummary = 32;
+	optional NetBuySell stock_hist_netbuysell = 33;
+	optional NetBuySell broker_hist_netbuysell = 34;
+	repeated ForeignHistory foreign_history = 35;
+	optional MarketSummary market_summary = 36;
+	repeated KiWk52104 wk52_104 = 37;
+	repeated COMessage conditional_order = 38;
+	
+	
+	repeated KiStockData contract_data = 39;
+	repeated KiTrade derivative_trade = 40;
+	repeated Level2 derivative_level_2	 = 41;
+	repeated Level3 derivative_level_3	 = 42;
+	repeated KiStockSummary contract_summary = 43;
+	repeated KiTrade derivative_last_trade = 44;
+}
+
+message KiRequest
+{	
+	optional RecordType type = 1;
+	optional Request status = 2;
+	optional string code = 3;
+	optional Board board = 4;	
+	optional int32 page = 5;
+	optional int32 range1 = 6;
+	optional int32 range2 = 7;
+	optional int32 number = 8;
+	optional int32 price = 9;
+	optional Sort sort = 10;
+	optional string broker = 11;	
+	optional int32 max = 12;
+	optional OrderCommand command = 13;
+	optional string key = 14;
+}
+
+enum CORules 
+{
+	SIMPLE = 1;
+	IF_DONE_ORDER_SINGLE_ORDER = 2;
+	IF_DONE_ORDER_SINGLE_SECURITIES = 3;
+	TRAILING_ORDER = 4;
+}
+
+enum COWhen
+{
+	LAST_PRICE = 0;
+	BEST_BID_PRICE = 1;
+	BEST_OFFER_PRICE = 2;
+	TOTAL_TRADE_QTY = 3;
+	BEST_BID_QTY = 4;
+	BEST_OFFER_QTY = 5;
+	TRADE_QTY_AT_PRICE = 6;
+	QUANTITY = 7;
+	FULLY_MATCH = 8;
+	QUANTITY_MORE_THAN = 9;
+	
+}
+
+enum COWhenCompare
+{
+	GREATER_EQUAL = 0;
+	LOWER_EQUAL = 1;
+}
+
+enum COTrend
+{
+	UP_TREND = 0;
+	DOWN_TREND = 1;
+}
+
+enum COStatus
+{
+	CO_ACTIVE = 1;
+	CO_NOT_ACTIVE = 2;
+}
+
+message COMessage
+{
+	optional int32 ocid = 1;
+	optional string code = 2;	
+	optional CORules rules_co = 3;
+	optional COWhen when1 = 4;
+	optional COWhenCompare whcomp = 5;
+	optional int32 price = 6;
+	optional COWhen when2 = 7;
+	optional COWhenCompare whcomp2 = 8;
+	optional int32 qty = 9;
+	optional COStatus status = 10;
+	optional COTrend trend = 11;
+	optional int32 diff_from_top = 12;
+	optional int32 side = 13;
+	
+	optional bool trigered = 14;
+	optional int32 tick_price = 15;
+	optional string owner_id = 16;
+}
+
+message IdxNewsMessage
+{		
+	optional int32 message_id = 2;
+	optional string subject = 3;
+	optional string title = 4;
+	optional string content = 5;
+}
+
+message IdxTradingStatus
+{		
+	optional string status = 2;
+	optional string message = 3;	
+}
+
+message IdxSuspendReleaseBroker 
+{					
+	optional string code = 2;	
+	optional SuspendReleaseStatus status = 3;						
+}
+
+message IdxSuspendReleaseStock
+{					
+	optional string code = 2;		
+	optional SuspendReleaseStatus status = 3;
+	optional Board board = 4;		
+}
+
+
+message KiRegionalIndicesData
+{
+	optional int32 id = 1;
+	optional string code = 2;
+	optional string name = 3;
+	optional string fullname = 4;
+	optional string market = 5;
+}
+
+message KiRegionalIndices
+{	
+	optional int32 sequence = 1;
+	optional int32 code_id = 2;
+	optional float change = 3;	
+	optional float previous = 4;
+	optional OHLCFloat ohlc = 5;
+	optional int32 date = 6;
+	optional int32 time = 7;
+}
+
+message KiFuture
+{
+	optional int32 sequence = 1;
+	optional int32 code_id = 2;	
+	optional float previous = 4;
+	optional OHLCFloat ohlc = 5;
+	optional int32 date = 6;
+	optional int32 time = 7;
+	optional float mid = 8;
+	optional float bid = 9;
+	optional float offer = 10;
+	optional float vol = 11;
+}
+
+message KiComodity
+{
+	optional int32 sequence = 1;
+	optional int32 code_id = 2;	
+	optional float previous = 4;
+	optional OHLCFloat ohlc = 5;
+	optional int32 date = 6;
+	optional int32 time = 7;
+	optional float mid = 8;
+	optional float bid = 9;
+	optional float offer = 10;
+	optional float vol = 11;
+}
+
+
+message KiCurrencyData
+{
+	optional int32 id = 1;
+	optional string code = 2;
+	optional string name = 3;
+}
+
+message KiCurrency
+{
+	optional int32 sequence = 1;
+	optional int32 curr_code = 2;	
+	optional int32 curr_against = 3;
+	optional float price = 4;
+	optional float change = 5;	
+	optional float range_1 = 7;
+	optional float range_2 = 8;
+	optional float last = 9;
+	optional float open = 10;
+	optional float high = 11;
+	optional float low = 12;
+	optional float prev = 13;
+	optional float mid = 14;
+	optional float bid = 15;
+	optional float offer = 16;
+	optional int32 date = 17;
+	optional int32 time = 18;
+}
+
+
+message IdxContractData 
+{		
+	optional string code = 2;			
+	optional string name = 3;
+	optional Status contract_status = 4;
+	optional string contract_type = 5;		
+	optional float initial_of_premium = 6;
+	optional int32 contract_size = 7;
+	optional string underlying = 8;
+	optional float option_strike = 9;
+	optional string option_verb = 10;
+	optional int64 mat_date = 11;	
+	optional string remarks = 12;
+	optional string remarks2 = 13;		
+}
+
+
+message IdxStockData 
+{		
+	optional string code = 2;			
+	optional string name = 3;
+	optional Status security_status = 4;
+	optional SecurityType security_type = 5;		
+	optional string sub_sector = 6;
+	optional float ipo_price = 7;
+	optional float base_price = 8;
+	optional int64 listed_share = 9;
+	optional int64 tradeable_share = 10;
+	optional int32 share_per_lot = 11;	
+	optional string remarks = 12;
+	optional string remarks2 = 13;		
+}
+
+message KiStockData
+{
+	optional int32 id = 1;
+	optional string code = 2;
+	optional string name = 3;
+	optional Status status = 4;
+	optional int32 sub_sector = 5;
+	optional int32 client_type = 6;
+	optional string board = 7;
+	optional string color = 8;
+	optional float ipo_price = 9;
+	optional SecurityType security_type = 10;		
+	optional int32 sh_enable = 11;
+	optional float sh_total_target = 12;
+	optional string type = 13;
+}
+
+
+message IdxContractSummary
+{
+	optional string code = 1;		
+	optional StockSummary contract_summary = 2;
+	optional int32 sequence = 3;
+	optional float avg_price =4;
+	optional Status secboard_state = 5;
+	optional float settlement_price = 6;
+	optional float refference_price = 7;	
+}
+
+message IdxStockSummary
+{
+	optional string code = 1;
+	optional float individual_index = 2;
+	optional int64 available_for_foreigners = 3;
+	optional Status secboard_state = 4;
+	optional StockSummary stock_summary = 5;
+	optional int32 sequence = 6;
+}
+
+message KiStockSummary
+{
+	optional int32 code_id = 1;	
+	optional int32 last_volume = 3;
+	optional StockSummary stock_summary = 4;
+	optional int64 foreign_bought = 5;
+	optional int64 foreign_sold = 6;
+	optional int64 domestic_bought = 7;
+	optional int64 domestic_sold = 8;
+	
+	optional int64 foreign_vol_bought = 9;
+	optional int64 foreign_val_bought = 10;
+	optional int64 foreign_freq_bought = 11;
+	
+	optional int64 foreign_vol_sold = 12;
+	optional int64 foreign_val_sold = 13;
+	optional int64 foreign_freq_sold = 14;	
+	optional int32 sequence = 15;	
+	optional float reference_price = 16;
+	optional float settlement_price = 17;
+}
+
+message KiWk52104 
+{
+	optional int32 code_id = 1;	
+	optional Board board = 2;
+	optional int32 wk52High = 3;
+	optional int32 wk52Low = 4;
+	optional int32 wk104High = 5;
+	optional int32 wk104Low = 6;
+}
+
+message StockSummary
+{	
+	optional Board board = 2;
+	optional int32 previous_price = 3;
+	optional float change = 4;
+	optional int64 traded_volume = 5;
+	optional int64 traded_value = 6;
+	optional int32 traded_frequency = 7;
+	optional OHLC ohlc = 8;
+	optional BestBidOffer best_bid_offer = 9;
+}
+
+message StockHistory
+{
+	optional int32 code_id = 1;	
+	optional Board board = 3;
+	repeated OHLC ohlc = 4;
+}
+
+message ForeignHistory
+{
+	optional int32 date = 1;
+	optional Board board = 2;
+	optional int64 f_buy = 3;
+	optional int64 f_sell = 4;
+	optional int64 t_val = 5;
+}
+
+message OHLC
+{
+	optional int32 time = 1;
+	optional int32 open = 2;
+	optional int32 high = 3;
+	optional int32 low = 4;
+	optional int32 close = 5;
+	optional int32 volume = 6;
+}
+
+
+
+
+message KiIndicesData
+{
+	optional int32 id = 1;
+	optional string code = 2;
+}
+
+message IdxIndices
+{
+	optional string code = 1;
+	optional int64 base_value = 2;
+	optional int64 market_value = 3;
+	optional Indices indices = 4;
+}
+
+message KiIndices
+{	
+	optional int32 code_id = 1;	
+	optional Indices indices = 3;
+}
+
+message Indices
+{
+	optional float previous = 1;
+	optional OHLCFloat ohlc = 2;
+}
+
+message IndicesHistory
+{
+	optional int32 code_id = 1;	
+	repeated OHLCFloat ohlc = 3;
+}
+
+message OHLCFloat
+{
+	optional int32 time = 1;
+	optional float open = 2;
+	optional float high = 3;
+	optional float low = 4;
+	optional float close = 5;
+	optional float volume = 6;
+}
+
+
+message IdxMarketDepth
+{
+	optional string code = 2;
+	optional Board board = 3;
+	
+	optional BestBidOffer best_bid_offer_1 = 4;
+	optional BestBidOffer best_bid_offer_2 = 5;
+	optional BestBidOffer best_bid_offer_3 = 6;
+	optional BestBidOffer best_bid_offer_4 = 7;
+	optional BestBidOffer best_bid_offer_5 = 8;		
+}
+
+message IdxTrade
+{
+	optional string code = 1;
+	optional string buyer_broker = 2;
+	optional string seller_broker = 3;
+	optional TradeCommand trade_command = 4;
+	optional BestBidOffer best_bid_offer = 5;
+	optional Trade trade = 6;
+	optional TNumber number = 7;
+}
+
+
+message Trade
+{		
+	optional int32 sequence = 1;
+	optional int32 trade_time = 2;
+	optional Board board = 3;
+	optional int32 price = 4;
+	optional int32 volume = 5;
+	optional InvestorType buyer_type = 6;
+	optional InvestorType seller_type = 7;
+}
+
+message KiTrade
+{
+	optional int32 code_id = 1;
+	optional int32 buyer_broker_id = 2;
+	optional int32 seller_broker_id = 3;		
+	optional int32 previous = 7;
+	optional Trade trade = 8;
+}
+
+message TNumber
+{
+	optional int32 trade_no = 1;
+	optional int32 buyer_order_no = 2;
+	optional int32 seller_order_no = 3;
+}
+
+message KiTradeDetail
+{
+	optional TNumber number = 1;
+	optional KiTrade detail = 2;
+}
+
+
+
+
+
+message IdxOrder
+{
+	optional string code = 1;
+	optional string broker = 2;	
+	optional BestBidOffer best_bid_offer = 4;
+	optional Order order = 5;
+}
+	
+message Order
+{				
+	optional int32 order_no = 1;
+	optional int32 sequence = 2;
+	optional int32 order_time = 3;
+	optional OrderCommand order_command = 4;
+	optional Board board = 5;
+	optional int32 price = 6;
+	optional int32 volume = 7;
+	optional int32 balance = 8;
+	optional InvestorType investor_type = 9;
+	optional int32 order_ref = 10;
+}
+
+message KiOrder
+{
+	optional int32 code_id = 1;
+	optional int32 broker_id = 2;	
+	optional Order order = 5;
+}
+
+message OrderInfo
+{		
+	optional int32 balance = 2;	
+	optional OrderStatus status = 3;
+	optional int32 queue = 4;
+	optional int32 lots	 = 5;
+	optional int32 n_queue = 6;
+	optional int32 n_lots = 7;
+	optional int32 order_ref = 8;
+	optional int32 broker_id = 9;
+}
+
+message KiOrderDetail
+{
+	optional KiOrder detail = 2;
+	optional OrderInfo info = 3;
+}
+
+
+
+
+message IdxBrokerData 
+{				
+	optional string code = 2;	
+	optional string name = 3;
+	optional Status status = 4;					
+}
+
+message KiBrokerData
+{
+	optional int32 id = 1;
+	optional string code = 2;
+	optional string name = 3;
+	optional Status status = 4;
+	optional InvestorType type = 5;
+}
+
+message NetBuySell
+{
+	optional int32 code_id = 1;	
+	optional Board board = 2;	
+	repeated Transaction transaction = 3;	
+}
+
+message Transaction
+{
+	optional int32 code_id = 1;
+	optional Board board = 2;		
+	optional int32 sequence = 3;
+	optional TransactionDetail buy = 4;
+	optional TransactionDetail sell = 5;
+	
+	optional int64 foreign_bought = 6;
+	optional int64 foreign_sold = 7;
+	optional int64 domestic_bought = 8;
+	optional int64 domestic_sold = 9;
+	optional string code = 10;				
+}
+
+message TransactionDetail
+{
+	optional int64 volume = 1;
+	optional int64 value = 2;
+	optional int32 frequency = 3;
+}
+
+message FDSummary
+{		
+	optional int32 sequence = 1;
+	optional TransactionDetail f_buy = 2;
+	optional TransactionDetail f_sell = 3;
+	optional TransactionDetail d_buy = 4;
+	optional TransactionDetail d_sell = 5;
+}
+
+message MarketSummary 
+{
+	optional TransactionDetail stock_rg = 1;
+	optional TransactionDetail stock_ng = 2;
+	optional TransactionDetail stock_tn = 3;
+	optional TransactionDetail warant_rg = 4;
+	optional TransactionDetail warant_ng = 5;
+	optional TransactionDetail warant_tn = 6;
+	optional TransactionDetail right_rg = 7;
+	optional TransactionDetail right_ng = 8;
+	optional TransactionDetail right_tn = 9;
+}
+
+message BestBidOffer
+{
+	optional int32 bid_price = 1;
+	optional int64 bid_volume = 2;
+	optional int32 offer_price = 3;
+	optional int64 offer_volume = 4;
+}
+
+message ForeignDomestic
+{
+	optional int32 code_id = 1;	
+	optional Board board = 2;
+	optional int32 sequence = 3;	
+	optional int64 foreign_bought = 4;
+	optional int64 foreign_sold = 5;
+	optional int64 domestic_bought = 6;
+	optional int64 domestic_sold = 7;	
+	optional int64 volume = 8;
+}
+
+message Level2
+{
+	optional int32 code_id = 1;
+	optional Board board = 2;
+	optional int32 sequence = 3;		
+	repeated BuySell bid = 4;
+	repeated BuySell offer = 5;
+	optional int64 total_bid = 6;
+	optional int64 total_offer = 7;
+}
+
+message Level3
+{
+	optional int32 code_id = 1;
+	optional Board board = 2;
+	optional int32 sequence = 3;	
+	repeated Level3Detail detail = 4;
+	optional int64 total_buy = 5;
+	optional int64 total_sell = 6;		
+}
+
+message Level3Detail
+{
+	optional int32 price = 1;
+	optional int32 buy_volume = 2;
+	optional int32 buy_frequency = 3;
+	optional int32 sell_volume = 4;
+	optional int32 sell_frequency = 5;
+}
+
+message BuySell
+{
+	optional int32 price = 1;
+	optional int64 volume = 2;
+	optional int32 queue = 3;
+}
+
+
+
+message RequestData
+{
+	optional string time 			  = 1;
+	optional Request request_type  	  = 2;	
+	optional Sort sorting		 	  = 3;
+	optional double sequence 		  = 4;
+	optional string application_type  = 5;
+	optional string login_type 	 	  = 6;
+	optional string expired_session   = 7;
+	optional string version 	 	  = 8;
+	optional string sessionMI 		  = 9;	
+	optional string sessionOL 		  = 10;
+	optional string clientname 		  = 11;
+	optional string clientcode 		  = 12;
+	optional string user_type		  = 13;
+	optional string username		  = 14;
+	optional string password		  = 15;
+	optional string pin				  = 16;
+	optional string ip_address		  = 17;	
+	optional string stockcode 		  = 18;
+	optional Board board 			  = 19;
+	optional OrderStatus order_status = 20;
+	optional RecordType record_type   = 21;
+	optional string general 		  = 22;
+	optional string message_order 	  = 23;
+	optional int32 price 	  		  = 24;
+	optional int32 qty 	  		  	  = 25;
+	optional int32 settle_date   	  = 26;	
+	optional DeviceType device_type		  = 27;
+	optional OrderConditional order_conditional = 28;
+	optional CashWithdraw cash_withdraw = 29;	
+}
+
+message TradingMessage
+{
+	optional RequestData rec_req_data 			= 1;	
+	repeated MasterData rec_m_privileges 		= 2;
+	repeated MasterData rec_m_orderstatus 		= 3;
+	repeated MasterData rec_m_ordertype 		= 4;	
+	repeated MenuData rec_m_menu 				= 5;	
+	repeated MarketCapping rec_m_marketcapping	= 6;	
+	repeated SharesInfo rec_m_sharesinfo		= 7;	
+	
+	optional LoginData rec_login_data 				 = 8;
+	repeated MessageBroadcastData rec_mess_broadcast = 9;
+	repeated ClientList rec_client_list 			 = 10;	
+	
+	optional string rec_privilleges_user = 11;
+	optional string rec_clordid 		 = 12;
+	optional CustomerPosition rec_customer_position = 13;
+	optional double rec_order_power	 	= 14;
+	optional double rec_avaiable_stock 	= 15;
+	
+	repeated TxOrder rec_orderlist 	= 16;
+	repeated OrderGtc rec_ordergtc  = 17;
+	repeated TxTrade rec_trade  		= 18;
+	repeated TxOrder rec_negoreceive  = 19;
+	repeated OrderLifeCycle rec_order_life_cycle = 20;
+	repeated TradeDetail rec_tradedetail  		 = 21;
+	repeated MarginAlert rec_margin_alert 		 = 22;
+	optional AccountInfo rec_account_info 		 = 23;
+	
+	optional RecordType rec_type 			= 24;			
+	optional StatusReturn rec_status_return = 25;
+	optional string rec_status_message 		= 26;
+	optional string rec_time 				= 27;
+
+	repeated Portfolio rec_portfolio 				= 28;
+	optional double rec_stock_in_hand 				= 29;
+	optional int32 rec_risk_control 				= 30;
+	optional CashMutation rec_cash_mutation			= 31;
+	repeated CustomerExposure rec_customer_exposure = 32;
+	repeated TxOrder rec_advlist 					= 33;
+	optional string clientcode 					= 34;
+	repeated GroupOrder rec_grouporder 				= 35;
+	repeated GroupOrderDetail rec_grouporder_detail = 36;
+	repeated ClientOverdue rec_client_overdue		= 37;
+	repeated MasterData rec_holiday				= 38;
+	repeated MasterBranch rec_branch			= 39;
+	repeated MasterUserlist	 rec_userlist			= 40;
+	optional int32 rec_automatic_shortsell	 	= 41;
+	repeated OrderConditional rec_orderconditional  = 42;
+	repeated TradingTarget rec_tradingtarget  = 43;
+	repeated CashFlow rec_cashflow = 44;
+	repeated PotonganPajak rec_potonganpajak = 45;
+	repeated OrderMobile rec_ordermobile  = 46;
+	optional string rec_general_message	  		= 47;
+	repeated UnregularStocklist rec_unregular_stocklist = 48;
+	repeated RDNList rec_rdn_list					= 49;
+	optional string rdn					= 50;	
+	optional int32 effective_date		= 51;
+	optional CashWithdraw rec_cash_withdraw = 52;		
+	repeated CashWithdraw rec_cash_withdraw_list = 53;
+}
+
+message MasterBranch
+{
+	optional string code 	= 1;
+	optional string branchname = 2;		
+}
+
+message MasterUserlist 
+{
+	optional string username 	   = 1;
+	optional string fullname      = 2;		
+	optional string usertype      = 3;		
+	optional string officercode   = 4;
+	optional string branchmanager = 5;		
+	optional string cs_branch     = 6;		
+}
+
+
+message MasterData
+{
+	optional int32 idMaster 	= 2;
+	optional string description = 1;		
+}
+
+message MenuData
+{
+	optional int32 menu_id		= 10;
+	optional int32 app_type		= 1;
+	optional string menu_name	= 2;
+	optional int32 parent_id	= 3;
+	optional int32 weight		= 4;
+	optional int32 depth		= 5;
+	optional string shortcut	= 6;
+	optional int32 max_window	= 7;
+	optional int32 menu_group	= 8;
+	optional int32 enable		= 9;
+}
+
+message MarketCapping
+{
+	optional double capping	  = 1;
+ 	optional double marking	  = 2;
+	optional string type	  = 3;
+	optional string stockcode = 4;
+	optional string stockname = 5;
+}	
+
+message SharesInfo
+{
+	optional string stockcode		= 10;
+	optional string cltype			= 1;
+	optional string regularBoard	= 2;
+	optional string negotiatedBoard	= 3;
+	optional string cashBoard		= 4;
+	optional string crossingBoard	= 5;
+	optional string regularTrx		= 6;
+	optional string tplusTrx		= 7;
+	optional string marginTrx		= 8;
+	optional string preopeningFlag	= 9;
+}	
+
+message LoginData
+{
+	optional string username 	= 1;
+	optional string fullname 	= 2;
+	optional string usertype 	= 3;
+	optional string session_mi 	= 4;
+	optional string session_ol 	= 5;
+	optional string ip_market 	= 6;
+	optional string ip_trade 	= 7;
+	optional bool is_logout 	= 8;
+	optional ChangePassword change_password = 9;
+	optional ChangePassword change_pin 	= 10;	
+	optional string user_id 	= 11;	
+	optional string login_status 		= 12;
+	optional string download_update		= 13;
+	optional double limit_by_quantity	= 14;
+	optional double limit_by_value		= 15;
+	optional string user_priv 	= 16;
+	optional int32 allow_orders	= 17;
+	optional int32 allow_trades	= 18;
+	optional ServerType server_type = 19;
+	optional string ip_market_webservice 	= 20;
+	optional string ip_trade_webservice 	= 21;
+	optional int32 lot_size			= 22;
+	optional string ip_proxy 		= 23;
+	optional string general_msg		= 24;
+}
+
+message MessageBroadcastData
+{
+	optional int32 msg_id 		 = 5;
+	optional string title		 = 1;
+	optional string content		 = 2;	
+	optional string published_at = 3;
+	optional string created_at	 = 4;		
+}	
+
+message ClientList
+{
+	optional string typeName	= 1;
+	optional string clientcode	= 2;
+	optional string name		= 3;
+	optional string sid			= 4;
+	optional string foreigner		= 5;	
+	optional bool isMargin		= 6;
+	optional double tradingLimit	= 7;
+	optional int32 riskControl	= 8;
+	optional double min_commission		 = 9;	
+	optional double reg_commission		 = 10;	
+	optional double nego_buy_commission	 = 11;	
+	optional double nego_sell_commission = 12;	
+	optional string general = 13;	
+}
+
+message RDNList
+{	
+	optional string clientcode		= 1;
+	optional string rdn				= 2;
+	optional int32 effective_date		= 3;		
+}
+
+
+message Portfolio
+{
+	optional double lot			= 1;
+	optional double stock_in_hand	= 2;
+	optional double avg_price		= 3;
+	optional double potential_profit_loss	  = 4;
+	optional double potential_profit_loss_pct = 5;
+	optional string stockcode		= 6;
+	optional double outstanding	= 7;
+	optional string clientcode	= 8;
+	optional string privileges	= 9;
+}	
+
+
+message CustomerPosition
+{	
+	optional string clientcode			  = 20;
+	optional string name				  = 1;
+	optional string type				  = 2;
+	optional string investor_acc		  = 3;
+	optional string sid					  = 4;
+	optional double order_power			  = 5;
+	optional double loan_balance		  = 6;
+	optional double trading_limit		  = 7;
+	optional double loan_ratio			  = 8;
+	optional double market_value		  = 9;
+	optional double modified_market_value = 10; 
+	optional double modified_loan_value	  = 11;
+	optional string rating				  = 12;
+	optional double buying_power		  = 13;
+	optional double outstanding			  = 14;
+	optional double buy_trade_value		  = 15;
+	optional double buy_order_value		  = 16;
+	optional double sell_trade_value	  = 17;
+	optional double nett_profit_loss  	  = 18;
+	optional double nett_profit_loss_pct  = 19;
+}	
+
+message CashFlow
+{
+	optional double t1	= 1;
+	optional double t2	= 2;
+	optional double t3	= 3;
+	optional string description	= 4;
+	optional double t0	= 5;
+}
+
+message CustomerExposure
+{
+	optional string clientname	= 1;
+	optional string type		= 2;
+	optional double qty		= 3;		
+	optional string stockcode	= 4;
+	optional string officercode	= 5;
+	
+}	
+
+
+
+message OrderMobile
+{
+	optional string jats_order_id	= 1;
+	optional string client_code	= 2;
+	optional string client_name	= 3;
+	optional string order_status	= 4;
+	optional string board		= 5;
+	optional int32 side		= 6;
+	optional string security_code	= 7;
+	optional double order_qty	= 8;
+	optional int32 price		= 9;
+	optional double leaves_qty	= 10;
+	optional double cum_qty		= 11;
+	optional string created_time	= 12;
+	
+	optional string description	= 13;
+	optional int32 sequence_no 	= 14;
+	optional string order_id	= 15;
+	optional double trade_qty	= 16;
+	optional int32 trade_price	= 17;
+	optional string trade_time	= 18;
+
+}
+
+message OrderGtc
+{
+	optional string gtc_id		 = 1;
+	optional int32 gtc_status		 = 2;
+	optional string is_pooled		 = 3;
+	optional string maintenance_date = 4;
+	optional int32 execution_flag	 = 5;
+	optional int32 expired_flag	 = 6;
+	optional TxOrder orders			 = 7;
+	optional string description	 = 8;
+}
+
+message OrderConditional
+{
+	optional int32 ocid	 		= 1;
+	optional string stockcode	= 2;
+	optional int32 side			= 3;	
+	optional int32 rules		= 4;
+	optional int32 trend	 	= 5;
+	optional string when1		= 6;
+	optional string whencomp1	= 7;
+	optional int32 price	 	= 8;	
+	optional string when2		= 9;
+	optional string whencomp2	= 10;
+	optional int32 qty	 		= 11;
+	optional int32 price_diff 	= 12;
+	optional string clordid		= 13;
+	optional int32 status	 	= 14;
+	optional int32 ordstatus 	= 15;
+	optional int32 matchqty	 	= 16;
+	optional string ownerid		= 17;
+	optional string terminate_act = 18;
+	optional string created_date  = 19;
+	optional string last_updated  = 20;
+	optional TxOrder orders		  = 21;
+	optional int32 price_bound    = 22;	
+	optional string time_bound    = 23;
+	optional string gtd_date      = 24;
+}
+
+message TradingTarget
+{
+	optional string security_code 	= 1;
+	optional string clientcode		= 2;
+	optional string clientname		= 3;
+	optional int32 side				= 4;
+	optional double initial_share	= 5;
+	optional double initial_price	= 6;
+	optional int32 status			= 7;
+	optional int32 ttid				= 8;
+	optional double initial_value	= 9;
+	optional double done_share		= 10;
+	optional double done_price		= 11;
+	optional double done_value		= 12;
+	optional double next_share		= 13;
+	optional double next_price		= 14;
+	optional double next_value		= 15;	
+	optional double order_share		= 16;
+	optional double order_price		= 17;
+	optional double order_value		= 18;
+	optional int32 is_avg_price		= 19;
+}
+
+message OrderLifeCycle
+{
+	optional string time	= 1;
+	optional string event	= 2;
+	optional TxOrder orders	= 3;
+}	
+
+
+message TxTrade
+{
+	optional string trade_id		= 16;
+	optional string jats_order_id	= 1;
+	optional string order_id		= 2;
+	optional string transact_time	= 3;
+	optional string clord_id		= 4;
+	optional string contra_trader	= 5;
+	optional string contra_broker	= 6;
+	optional int32 price			= 7;
+	optional int32 cum_qty			= 8;
+	optional int32 side				= 9;
+	
+	optional string client_id	= 10;
+	optional string client_name	= 11;
+	optional string stockcode	= 12;
+	optional string symbol_sfx	= 13;
+	optional string owner_id	= 14;	
+	optional double sequence_no	= 15;	
+}
+
+
+message TxOrder
+{
+	optional string jats_order_id	= 1;
+	optional string client_code		= 2;
+	optional string client_name		= 3;
+	optional string order_status	= 4;
+	optional string account			= 5;
+	optional string board			= 6;
+	optional int32 side				= 7;
+	optional string security_code	= 8;
+	optional double order_qty		= 9;
+	optional int32 price			= 10;
+	optional string expired_date	= 11;
+	optional double leaves_qty		= 12;
+	optional double cum_qty			= 13;
+	optional string created_time	= 14;
+	optional string updated_time	= 15;
+	optional string source			= 16;
+	optional string owner_id		= 17;
+	
+	optional string order_type		 = 18;
+	optional string gtd_date		 = 19;
+	optional string description		 = 20;	
+	optional int32 order_buffer_type = 21;
+	optional int32 sequence_no 		 = 23;
+	optional string order_id		 = 22;
+	optional string reason_text		 = 24;
+	optional string client_id		 = 25;
+	optional string trade_id		 = 26;
+	optional string counter_trader	 = 27;
+	optional string counter_broker	 = 28;
+	optional string hand_inst	 	 = 29;
+	optional string is_renew	 	 = 30;
+	optional string cparty	 	 	 = 31;
+	optional string orderParentId 	 = 32;
+	optional string gtcOrderType 	 = 33;
+	optional string batchId 	 	 = 34;
+	optional string batchTime 	 	 = 35;
+	optional double trade_qty		 = 36;
+	optional int32 trade_price		 = 37;
+	optional string trade_time		 = 38;
+	optional string updated_by		 = 39;
+	optional string futsetdate		 = 40;
+	optional int32 bulkid		 	 = 41;
+	optional double weight_avg		 = 42;
+	optional string origclorid		 = 43;
+	optional int32 broadcast_type	 = 44;
+	optional string senderid		 = 45;
+	optional string officername		 = 46;
+	optional double total_value		 = 47;
+	optional string compliance_id	 = 48;
+}
+
+message TradeDetail
+{
+	optional string time		= 5;
+	optional string trade_no	= 1;
+	optional string jats_id		= 2;
+	optional int32 price		= 3;
+	optional int32 qty			= 4;
+}	
+
+message AccountInfo
+{
+	optional string clientcode	 = 15;
+	optional string name		 = 1;
+	optional string address		 = 2;
+	optional string city		 = 3;
+	optional string zipcode		 = 4;
+	optional string province	 = 5;
+	optional string phone		 = 6;
+	optional string fax			 = 7;
+	optional string mobile_phone = 8;
+	
+	optional string sid					= 9;
+	optional string sub_rek				= 10;
+	optional string rdi_account_name	= 11;
+	optional string rdi_account_no		= 12;
+	optional string bank_account		= 13;
+	optional string bank_account_no		= 14;
+}	
+
+message BuyingPower
+{
+	optional double buying_power			= 1;
+	optional double outstanding_bov			= 2;
+	optional string risk_control			= 3;	
+	optional double loan_balance			= 4;
+	optional string client_rating			= 5;
+	optional int32 client_type_code			= 6;	
+	optional double trading_limit			= 7;
+	optional double loan_ratio				= 8;
+	optional double market_value			= 9;
+	optional double modified_market_value		= 10;
+	optional double modified_loan_ratio		= 11;
+	optional double buy_trade_value			= 12;
+	optional double sell_trade_value		= 13;
+	optional string privilleges			= 14;
+	optional double order_power			= 15;
+	optional int32 automatic_shortsell	= 16;	
+	optional string user_type			= 17;	
+
+}	
+
+message MarginAlert
+{
+	optional string code	= 5;
+	optional string name	= 1;
+	optional int32 ratio	= 2;
+	optional int32 days		= 3;
+	optional string status	= 4;
+}	
+
+message CashMutation
+{
+	optional string name				= 1;
+	optional string address				= 2;
+	optional string ciptadana_account	= 3;
+	optional string bank_account		= 4;
+	optional string bank_name			= 5;
+	optional string bank_branch			= 6;
+	optional string bank_no				= 7;
+	optional string sendcash_status		= 8;
+}	
+
+
+message SubmitOrder
+{
+	optional string type_code 	= 1;
+	optional string username 	= 2;
+	optional string user_type	= 3;
+	optional string app_source	= 4;
+	optional string sending_time = 5;
+	optional string account		= 6;
+	optional string hand_inst	= 7;
+	optional string securitycode = 8;
+	optional string board		 = 9;
+	optional string side		 = 10;
+	optional string order_qty	 = 11;
+	optional string price		 = 12;
+	optional string time_in_force = 13;
+	optional string expire_date		= 14;
+	optional string compliance_id	= 15;
+	optional string clientcode		= 16;
+	optional string settlement_date	= 17;
+	optional string jats_id			= 18;
+	optional string orig_clordid	= 19;
+	optional string text_nego_deal	= 20;
+	optional string orig_gtc		= 21;
+}	
+
+
+message GroupOrder
+{
+	optional string group_id	  = 1;
+	optional string group_code	  = 2;
+	optional string group_name	  = 3;
+	optional string type_code	  = 4;
+	optional string side		  = 5;
+	optional int32 total_clien	  = 6;
+	optional string lastupdated	  = 7;
+	optional string security_code = 8; 
+}
+
+
+message GroupOrderDetail
+{
+	optional string clientcode	= 1;
+	optional string clientname	= 2;
+	optional string privileges	= 3;
+	optional string sid			= 4;
+	optional string foreigner	= 5;
+	optional double lots			= 6;
+	optional double remaining	= 7;
+	optional double lots_pct		= 8; 
+	optional double tradinglimit	= 9; 
+	optional double remaining_bulk	= 10;
+	optional double total_bulk	= 11;
+
+}
+
+
+message ClientOverdue
+{
+	optional string clientcode	= 1;
+	optional string clientname	= 2;
+	optional string duedate		= 3;
+	optional string subaccount	= 4;
+	optional string amount		= 5;
+}
+
+message PotonganPajak
+{
+	optional string trx_date  = 1;
+ 	optional string securitycode  = 2;
+	optional double qty	  = 3;
+	optional double price = 4;
+	optional double val = 5;
+	optional double pph = 6;
+	optional string period  = 7;
+	optional string clientname  = 8;
+	optional int32 side  = 9;
+	optional double commission  = 10;
+	optional double min_commission  = 11;
+	optional string branch = 12;
+}
+
+
+message UnregularStocklist 
+{
+	optional string clientcode 	= 1;
+	optional string stockcode   = 2;
+	optional string message     = 3;
+}
+
+message CashWithdraw
+{
+	optional string id				= 1;
+	optional float	current_cash	= 2;
+	optional string transfer_to		= 3;
+	optional float	amount			= 4;
+	optional string trading_pin		= 5;
+	optional string type			= 6;
+	optional string status_agrement	= 7;
+	optional string req_date		= 8;
+	optional string req_status		= 9;
+}

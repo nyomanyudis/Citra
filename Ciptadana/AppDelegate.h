@@ -1,0 +1,88 @@
+//
+//  AppDelegate.h
+//  Ciptadana
+//
+//  Created by Reyhan on 9/19/13.
+//  Copyright (c) 2013 Reyhan. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "ViewController.h"
+#import "AppDelegate.h"
+#import "UIColor+ColorStyle.h"
+#define white [UIColor whiteColor]
+#define black [UIColor blackColor]
+#define red [UIColor redColor]
+#define GREEN [UIColor greenColor]
+#define yellow [UIColor yellowColor]
+#define magenta [UIColor magentaColor]
+#define grey [UIColor colorWithHexString:@"333333"]
+#define blackBorder [UIColor colorWithHexString:@"333333"]
+#define gold [UIColor colorWithHexString:@"A79865"]
+
+#define CONCAT(A, B) [NSString stringWithFormat:@"%@%@", A, B]
+
+#define BUY_COLOR [UIColor colorWithHexString:@"149916"]
+#define SELL_COLOR [UIColor redColor]
+
+
+#define chg(close, prev) prev - close
+#define chgprcnt(chg, prev) chg * 100 / prev
+//#define lot(volume) volume / 500
+
+
+
+static NSNumberFormatter *numberFormatter;
+
+
+@class ViewController;
+
+@interface AppDelegate : UIResponder <UIApplicationDelegate>
+
+@property (strong, nonatomic) UIWindow *window;
+
+@property (strong, nonatomic) ViewController *viewController;
+
+@property NSString *userid;
+@property NSString *passwd;
+@property NSString *stringDate;
+
+- (void)transitionToViewController:(UIViewController *)viewController withTransition:(UIViewAnimationOptions)transition;
+- (void)stopHomeTimer;
+- (void)startHometimer;
+- (UIViewController *)topViewController;
+- (void)goToFirstPage:(UIViewController*)v;
+
+BOOL isSimulator();
+
+@end
+
+
+
+NSNumberFormatter* currencyFormatter();
+NSString* currencyString(NSNumber *number);
+NSString* currencyStringFromInt(NSInteger integer);
+NSString* currencyStringFromFloat(NSInteger integer);
+NSString* currencyStringWithFormat(NSNumber *number, NSNumberFormatter *formatter);
+NSString* currencyRounded(NSInteger rupiah);
+NSString* currencyRoundedWithFloat(float rupiah);
+NSString* currencyRoundedWithFloatWithFormat(float rupiah, NSNumberFormatter *formatter2comma);
+NSString* currencyRoundedWithUint64(uint64_t rupiah);
+
+
+
+
+/**
+ what new v1.1.2
+ 
+ 1. View details in Top Broker
+ 2. Store F/D Net Buy Sell
+ 3. View details in F/D Net Buy Sell
+ 4. View details in Net B/S By Broker
+ 5. Coloring Stock Watch chart
+ 6. Store Watchlist
+ 7. View details in Net B/S By Stock
+ 8. Remove Buy Order Value field in Portfolio
+ 
+**/
+

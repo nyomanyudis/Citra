@@ -1,0 +1,954 @@
+//
+//  StockWatchViewController.m
+//  Ciptadana
+//
+//  Created by Reyhan on 10/7/13.
+//  Copyright (c) 2013 Reyhan. All rights reserved.
+//
+
+#import "StockWatchViewController.h"
+#import "AppDelegate.h"
+#import "QuartzCore/QuartzCore.h"
+#import "ImageResources.h"
+#import "JSONKit.h"
+#import "AutocompletionTableView.h"
+#import "FDGraphView.h"
+#import "Logger.h"
+
+
+static KiStockSummary *currentKiStockSummary;
+static KiStockData *lastStock;
+static Level2 *level2;
+static Level3 *level3;
+static NSArray *arrayKiTrade;
+
+
+@interface StockWatchViewController () <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, UITextFieldDelegate, AutocompletionTableViewDelegate>
+
+@property (retain, nonatomic) UITableView * tableLevel2;
+@property (retain, nonatomic) UITableView * tableLevel3;
+@property (retain, nonatomic) UITableView * tableTrade;
+@property NSNumberFormatter *numberFormatter;
+
+@property (nonatomic) FDGraphView *lineChart;
+
+@property (nonatomic, strong) AutocompletionTableView *autoCompleter;
+
+@end
+
+@implementation StockWatchViewController
+
+@synthesize backBarItem, homeBarItem;
+@synthesize stockLabel, buySellSegment, detailView, stockTextField, priceLabel, chgLabel, chgpLabel, hiLabel, loLabel, openLabel, prevLabel, volLabel, vol2Label, valLabel, val2Label, scrollview, pagecontrol;
+@synthesize tableLevel3, tableLevel2, tableTrade;
+@synthesize stockNameLabel;
+
+
+- (void)backBarItemClicked:(id)s
+{
+    [[AgentFeed sharedInstance] agentSelector:nil withObject:nil];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeLevel2];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeLevel3];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeKiLastTrade];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeStockHistory];
+    [self dismissViewControllerAnimated:YES completion:^{
+    }];
+
+}
+
+- (void)homeBarItemClicked:(id)s
+{
+    [[AgentFeed sharedInstance] agentSelector:nil withObject:nil];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeLevel2];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeLevel3];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeKiLastTrade];
+    [[AgentFeed sharedInstance] unsubscribe:RecordTypeStockHistory];
+    [self dismissViewControllerAnimated:NO completion:^{
+        [self.previouseController dismissViewControllerAnimated:YES completion:nil];
+    }];
+
+}
+
+- (AutocompletionTableView *)autoCompleter
+{
+    if (!_autoCompleter)
+    {
+        NSMutableDictionary *options = [NSMutableDictionary dictionaryWithCapacity:2];
+        [options setValue:[NSNumber numberWithBool:NO] forKey:ACOCaseSensitive];
+        [options setValue:nil forKey:ACOUseSourceFont];
+        
+        _autoCompleter = [[AutocompletionTableView alloc] initWithTextField:stockTextField inViewController:self withOptions:options];
+        _autoCompleter.autoCompleteDelegate = self;
+    }
+    
+    return _autoCompleter;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    logDebug(@"SHOW STOCK WATCH");
+    
+    [[AgentFeed sharedInstance] agentSelector:@selector(AgentFeedCallback:) withObject:self];
+    
+    if(level2Dictionary == nil) {
+        level2Dictionary = [NSMutableDictionary dictionary];
+    }
+    
+    UIButton *backButton = [self backTabButton];
+    UIButton *homeButton = [self homeTabButton];
+    [backButton addTarget:self action:@selector(backBarItemClicked:) forControlEvents:UIControlEventTouchDown];
+    [homeButton addTarget:self action:@selector(homeBarItemClicked:) forControlEvents:UIControlEventTouchDown];
+    
+    [backBarItem setCustomView:backButton];
+    [homeBarItem setCustomView:homeButton];
+    
+    vol2Label.adjustsFontSizeToFitWidth = YES;
+    
+    priceLabel.adjustsFontSizeToFitWidth = YES;
+    stockLabel.adjustsFontSizeToFitWidth = YES;
+    
+    _numberFormatter = [[NSNumberFormatter alloc] init];
+    _numberFormatter.positiveFormat = @"###,###.##";
+    _numberFormatter.roundingMode = NSNumberFormatterRoundFloor;
+    [_numberFormatter setDecimalSeparator:@"."];
+    [_numberFormatter setGroupingSeparator:@","];
+    [_numberFormatter setAllowsFloats:YES];
+    
+    if (nil == chartDictionary) {
+        chartDictionary = [NSMutableDictionary dictionary];
+    }
+    
+    _lineChart = [[FDGraphView alloc] initWithFrame:CGRectMake(8, 172, 155, 82)];
+    _lineChart.backgroundColor = detailView.backgroundColor;
+    [self.view addSubview:_lineChart];
+    
+    
+    CGRect rect= self.view.frame;
+    rect.origin.x = 0.0f;
+    rect.origin.y = 135.0f;
+    rect.size.height = 310.0f;
+    scrollview = [[UIScrollView alloc] initWithFrame:rect];
+    [self.view addSubview:scrollview];
+    [scrollview setFrame:CGRectMake(scrollview.frame.origin.x, detailView.frame.size.height +2, scrollview.frame.size.width, scrollview.frame.size.height + 100)];
+    
+    detailView.layer.cornerRadius = 10.0f;
+    scrollview.contentSize = CGSizeMake(3 * scrollview.frame.size.width, scrollview.frame.size.height);
+    scrollview.delegate = self;
+    
+    tableLevel2 = [[UITableView alloc] initWithFrame:CGRectMake(0, scrollview.frame.origin.y, self.view.frame.size.width, scrollview.frame.size.height + 50)];
+    tableLevel3 = [[UITableView alloc] initWithFrame:CGRectMake(self.view.frame.size.width, scrollview.frame.origin.y, self.view.frame.size.width, scrollview.frame.size.height + 50)];
+    tableTrade = [[UITableView alloc] initWithFrame:CGRectMake(2 * self.view.frame.size.width, scrollview.frame.origin.y, self.view.frame.size.width, scrollview.frame.size.height + 50)];
+    
+    tableLevel2.tag = 1;
+    tableLevel3.tag = 2;
+    tableTrade.tag = 3;
+    
+    tableLevel2.rowHeight = 20;
+    tableLevel3.rowHeight = 20;
+    tableTrade.rowHeight = 20;
+    
+    tableLevel2.backgroundColor = black;
+    tableLevel3.backgroundColor = black;
+    tableTrade.backgroundColor = black;
+    
+    tableLevel2.delegate = self;
+    tableLevel2.dataSource = self;
+    tableLevel2.separatorColor = [UIColor colorWithPatternImage:separatorImage()];
+    tableLevel3.delegate = self;
+    tableLevel3.dataSource = self;
+    tableLevel3.separatorColor = [UIColor colorWithPatternImage:separatorImage()];
+    tableTrade.delegate = self;
+    tableTrade.dataSource = self;
+    tableTrade.separatorColor = [UIColor colorWithPatternImage:separatorImage()];
+    
+    [scrollview addSubview:tableLevel2];
+    [scrollview addSubview:tableLevel3];
+    [scrollview addSubview:tableTrade];
+    scrollview.scrollEnabled = YES;
+    scrollview.pagingEnabled = YES;
+    
+    stockTextField.delegate = self;
+    [stockTextField addTarget:self.autoCompleter action:@selector(textFieldValueChanged:) forControlEvents:UIControlEventEditingChanged];
+    stockLabel.adjustsFontSizeToFitWidth = YES;
+    
+    if (nil != lastStock) {
+        [self requestStockWithKiStockData:lastStock];
+    }
+}
+
+
+- (void)requestStock:(NSString*)stock
+{
+    if(nil == lastStock || ![lastStock.code isEqualToString:stock]) {
+        logDebug([NSString stringWithFormat:@"REQUEST 1. STOCK: %@", stock]);
+        
+        stockLabel.text = @"";
+        priceLabel.text = @"";
+        chgLabel.text = @"";
+        chgpLabel.text = @"";
+        hiLabel.text = @"";
+        loLabel.text = @"";
+        openLabel.text = @"";
+        prevLabel.text = @"";
+        volLabel.text = @"";
+        valLabel.text = @"";
+        
+        lastStock = nil;
+        level2 = nil;
+        level3 = nil;
+        arrayKiTrade = nil;
+        
+        [tableLevel2 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        [tableLevel3 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        [tableTrade performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        
+        KiStockData *d = [[DBLite sharedInstance] getStockDataByStock:stock];
+        if (nil != d) {
+            lastStock = d;
+            [self requestStockWithKiStockData:lastStock];
+        }
+    }
+}
+
+- (void)requestStockWithKiStockData:(KiStockData *)kiStockData
+{
+    
+    [self.lineChart setDataColors:nil];
+    [self.lineChart setDataPoints:nil];
+    
+    if(nil != kiStockData) {
+        logDebug([NSString stringWithFormat:@"REQUEST 2. STOCK: %@", kiStockData.code]);
+        
+        stockNameLabel.text = kiStockData.name;
+        stockNameLabel.textColor = [UIColor colorWithHexString:kiStockData.color];
+        
+        [self drawChart];
+        
+        stockLabel.text = lastStock.code;
+        stockLabel.textColor = [UIColor colorWithHexString:lastStock.color];
+        
+        Board b = BoardRg;
+        
+        if([kiStockData.code containsString:@"-R"]) {
+            NSLog(@" Stock Summary Board: %@, Code: %i", kiStockData.board, kiStockData.id);
+            b = BoardTn;
+        }
+        
+        KiStockSummary *kiStockSummary = [[DBLite sharedInstance] getStockSummaryById:lastStock.id andBoard:b];
+        [self refreshKiStockSummary:kiStockSummary];
+    }
+    else {
+        lastStock = nil;
+    }
+    
+    Level2 *lvl2 = [level2Dictionary objectForKey:kiStockData.code];
+    if(lvl2 != nil){
+        level2 = lvl2;
+        [tableLevel2 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+    }
+    
+    if (nil != lastStock) {
+        [[AgentFeed sharedInstance] subscribe:RecordTypeLevel2 status:RequestSubscribe code:lastStock.code];
+        [[AgentFeed sharedInstance] subscribe:RecordTypeLevel3 status:RequestSubscribe code:lastStock.code];
+        [[AgentFeed sharedInstance] subscribe:RecordTypeKiLastTrade status:RequestSubscribe code:lastStock.code];
+        [[AgentFeed sharedInstance] subscribe:RecordTypeStockHistory status:RequestSubscribe code:lastStock.code];
+    }
+}
+
+- (void)refreshKiStockSummary:(KiStockSummary*)kiStockSummary
+{
+    logDebug([NSString stringWithFormat:@"REFRESH STOCK SUMMARY"]);
+    if(nil != kiStockSummary) {
+        currentKiStockSummary = kiStockSummary;
+        
+        float chgp = chgprcnt(kiStockSummary.stockSummary.change, kiStockSummary.stockSummary.previousPrice);
+        priceLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.ohlc.close);
+        chgLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.change);
+        chgpLabel.text = [NSString stringWithFormat:@"%.2f%%", chgp];
+        
+        if(kiStockSummary.stockSummary.change > 0) {
+            priceLabel.textColor = GREEN;
+            chgpLabel.textColor = GREEN;
+            chgLabel.textColor = GREEN;
+        }
+        else if(kiStockSummary.stockSummary.change < 0) {
+            priceLabel.textColor = red;
+            chgpLabel.textColor = red;
+            chgLabel.textColor = red;
+        }
+        else {
+            priceLabel.textColor = yellow;
+            chgpLabel.textColor = yellow;
+            chgLabel.textColor = yellow;
+        }
+        
+        int64_t val = kiStockSummary.stockSummary.tradedValue;
+        int64_t vol = kiStockSummary.stockSummary.tradedVolume;
+        float fval = val;
+        float fvol = vol;
+        if(val > 1000) {
+            fval = val / 1000;
+            val2Label.text = @"Value (K)";
+            valLabel.text = [_numberFormatter stringFromNumber:[NSNumber numberWithFloat:fval]];
+        }
+        else {
+            val2Label.text = @"Value";
+            valLabel.text = [_numberFormatter stringFromNumber:[NSNumber numberWithFloat:val]];
+        }
+        if(vol > 10000000) {
+            fvol = vol / 1000;
+            vol2Label.text = @"Volume (K)";
+            volLabel.text = [_numberFormatter stringFromNumber:[NSNumber numberWithFloat:fvol]];
+        }
+        else {
+            vol2Label.text = @"Volume";
+            volLabel.text = [_numberFormatter stringFromNumber:[NSNumber numberWithFloat:vol]];
+        }
+        
+        hiLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.ohlc.high);
+        loLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.ohlc.low);
+        openLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.ohlc.open);
+        prevLabel.text = currencyStringFromInt(kiStockSummary.stockSummary.previousPrice);
+        
+        hiLabel.textColor = kiStockSummary.stockSummary.ohlc.high > kiStockSummary.stockSummary.previousPrice ? GREEN :
+                            kiStockSummary.stockSummary.ohlc.high < kiStockSummary.stockSummary.previousPrice ? red : yellow;
+        loLabel.textColor = kiStockSummary.stockSummary.ohlc.low > kiStockSummary.stockSummary.previousPrice ? GREEN :
+                            kiStockSummary.stockSummary.ohlc.low < kiStockSummary.stockSummary.previousPrice ? red : yellow;
+        openLabel.textColor = kiStockSummary.stockSummary.ohlc.open > kiStockSummary.stockSummary.previousPrice ? GREEN :
+                            kiStockSummary.stockSummary.ohlc.open < kiStockSummary.stockSummary.previousPrice ? red : yellow;
+        prevLabel.textColor = kiStockSummary.stockSummary.previousPrice > kiStockSummary.stockSummary.previousPrice ? GREEN :
+                            kiStockSummary.stockSummary.previousPrice < kiStockSummary.stockSummary.previousPrice ? red : yellow;
+    }
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)viewDidUnload {
+    logDebug([NSString stringWithFormat:@"CLOSE"]);
+    [self setHomeBarItem:nil];
+    [self setBackBarItem:nil];
+    [self setHomeBarItem:nil];
+    [self setBackBarItem:nil];
+    [self setStockTextField:nil];
+    [self setBuySellSegment:nil];
+    [self setDetailView:nil];
+    [self setStockLabel:nil];
+    [self setPriceLabel:nil];
+    [self setChgLabel:nil];
+    [self setChgpLabel:nil];
+    [self setHiLabel:nil];
+    [self setLoLabel:nil];
+    [self setOpenLabel:nil];
+    [self setPrevLabel:nil];
+    [self setVolLabel:nil];
+    [self setValLabel:nil];
+    [self setScrollview:nil];
+    [self setPagecontrol:nil];
+    [self setStockNameLabel:nil];
+    [super viewDidUnload];
+}
+
+- (void)drawChart
+{
+    if (nil != lastStock) {
+        NSMutableArray *array = [chartDictionary objectForKey:lastStock.code];
+        
+        if (nil != array) {
+            NSMutableArray *points = [NSMutableArray array];
+            NSMutableArray *colors = [NSMutableArray array];
+            
+            KiStockSummary *summary = [[DBLite sharedInstance] getStockSummaryById:lastStock.id];
+            
+            for (OHLC *ohlc in array) {
+                [points addObject:[NSNumber numberWithInt:ohlc.close]];
+                
+                if (summary.stockSummary.previousPrice < ohlc.close)
+                    [colors addObject:GREEN];
+                else if(summary.stockSummary.previousPrice > ohlc.close)
+                    [colors addObject:red];
+                else [colors addObject:yellow];
+            }
+            
+            [self.lineChart setDataColors:colors];
+            [self.lineChart setDataPoints:points];
+        }
+    }
+}
+
+#pragma mark
+#pragma AutocompletionTableViewDelegate
+
+- (NSArray*) autoCompletion:(AutocompletionTableView*) completer suggestionsFor:(NSString*) string
+{
+    return [DBLite sharedInstance].getStringStockData;
+}
+
+- (void) autoCompletion:(AutocompletionTableView*) completer didSelectAutoCompleteSuggestionWithIndex:(NSInteger) index
+{
+    [self requestStock:stockTextField.text.uppercaseString];
+}
+
+
+
+#pragma mark
+#pragma UITextFieldDelegate
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [stockTextField resignFirstResponder];
+    
+    NSString *stock = [stockTextField.text.uppercaseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    
+    stockTextField.text = @"";
+    stockNameLabel.text = @"";
+    
+    if(stock.length > 0) {
+        [self requestStock:stock.uppercaseString];
+        
+        level2 = nil;
+        level3 = nil;
+        arrayKiTrade = nil;
+        
+        [tableLevel2 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        [tableLevel3 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        [tableTrade performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+        
+        [self drawChart];
+    }
+    
+    [self.autoCompleter hideOptionsView];
+    
+    return YES;
+}
+
+- (void)AgentFeedCallback:(KiRecord *)rec
+{
+    if (RecordTypeKiIndices == rec.recordType) {
+        [self updateIndicesIHSG:rec.indices];
+    }
+    else if(RecordTypeKiStockSummary == rec.recordType) {
+        [self updateStockWatchStockSummary:rec.stockSummary];
+    }
+    else if(RecordTypeLevel2 == rec.recordType) {
+        [self updateLevel2:rec.level2];
+    }
+    else if(RecordTypeLevel3 == rec.recordType) {
+        [self updateLevel3:rec.level3];
+    }
+    else if(RecordTypeKiLastTrade == rec.recordType) {
+        [self updateKiLastTrade:rec.lastTrade];
+    }
+    else if(RecordTypeStockHistory == rec.recordType) {
+        [self updateStockHistory:rec.stockHistory];
+    }
+}
+
+#pragma mark
+#pragma AgentSecurityStockWatchDelegate
+- (void)updateLevel3:(NSArray *)arraylevel3
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(nil != arraylevel3 && arraylevel3.count > 0) {
+            Level3 *l3 = [arraylevel3 objectAtIndex:0];
+            if (nil != lastStock && nil != l3 && lastStock.id == l3.codeId) {
+                //[self updateStockSummary:l3.codeId];
+                level3 = l3;
+                [tableLevel3 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+            }
+        }
+    });
+}
+
+- (void)updateLevel2:(NSArray *)arrayLevel2
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(nil != arrayLevel2 && arrayLevel2.count > 0) {
+            Level2 *l2 = [arrayLevel2 objectAtIndex:0];
+            NSLog(@"level 2 refresh? bid %lu, offer %lu", (unsigned long)l2.bid.count, (unsigned long)l2.offer.count);
+            if(nil != lastStock && nil != l2 && lastStock.id == l2.codeId) {
+                //[self updateStockSummary:l2.codeId];
+                
+                [level2Dictionary setObject:l2 forKey:lastStock.code];
+                
+                //logDebug([NSString stringWithFormat:@"UPDATE LEVEL2"]);
+                NSUInteger min = l2.bid.count < l2.offer.count ? l2.bid.count : l2.offer.count;
+                for (int n=0; n<min; n++) {
+                    BuySell *bid = [l2.bid objectAtIndex:n];
+                    BuySell *offer = [l2.offer objectAtIndex:n];
+                    logDebug([NSString stringWithFormat:@"UPDATE LEVEL2 BID LOT:%@ PRICE:%@\t OFFER PRICE:%@ LOT:%@", currencyStringFromFloat(bid.volume), currencyStringFromFloat(bid.price), currencyStringFromFloat(offer.volume), currencyStringFromFloat(offer.price)]);
+                }
+                
+                if(nil != l2) {
+                    level2 = l2;
+                    [tableLevel2 performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+                }
+            }
+        }
+    });
+}
+
+- (void)updateKiLastTrade:(NSArray *)arrayTrade
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(nil != arrayTrade && arrayTrade.count > 0) {
+            KiTrade *kiTrade = [arrayTrade objectAtIndex:0];
+            if (nil != lastStock && nil != kiTrade && lastStock.id == kiTrade.codeId) {
+                //[self updateStockSummary:kiTrade.codeId];
+                arrayKiTrade = arrayTrade;
+                [tableTrade performSelector:@selector(reloadData) withObject:nil afterDelay:0.5];
+            }
+        }
+    });
+}
+
+- (void)updateStockWatchStockSummary:(NSArray *)arrayStockSummary
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        for (KiStockSummary *kiStockSummary in arrayStockSummary) {
+            if(kiStockSummary.stockSummary.board == BoardTn) {
+                //NSLog(@"### code: %i Tn", kiStockSummary.codeId);
+            }
+            if(nil != lastStock && kiStockSummary.codeId == lastStock.id /*&& kiStockSummary.stockSummary.board == BoardRg*/) {
+                stockLabel.text = lastStock.code;
+                stockLabel.textColor = [UIColor colorWithHexString:lastStock.color];
+                
+                [self refreshKiStockSummary:kiStockSummary];
+                [self drawChart];
+            }
+        }
+    });
+}
+
+- (void)updateStockHistory:(NSArray *)arrayStockHistory
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(nil != arrayStockHistory) {
+            
+            BOOL same = NO;
+            NSMutableArray *points;
+            NSMutableArray *colors;
+            for (StockHistory *s in arrayStockHistory) {
+                if (nil != lastStock && lastStock.id == s.codeId) {
+                    same = YES;
+                    NSMutableArray *array = [chartDictionary objectForKey:lastStock.code];
+                    
+                    if (nil == points && nil == colors) {
+                        points = [NSMutableArray array];
+                        colors = [NSMutableArray array];
+                    }
+                    
+                    if(nil == array) {
+                        array = [NSMutableArray array];
+                        [chartDictionary setObject:array forKey:lastStock.code];
+                    }
+                    
+                    [array addObjectsFromArray:s.ohlc];
+                    
+                    KiStockSummary *summary = [[DBLite sharedInstance] getStockSummaryById:lastStock.id];
+                    
+                    for (OHLC *ohlc in s.ohlc) {
+                        [points addObject:[NSNumber numberWithInt:ohlc.close]];
+                        
+                        if (summary.stockSummary.previousPrice < ohlc.close)
+                            [colors addObject:GREEN];
+                        else if(summary.stockSummary.previousPrice > ohlc.close)
+                            [colors addObject:red];
+                        else [colors addObject:yellow];
+                    }
+                    
+                    [self.lineChart updateDataPoints:points andColors:colors];
+                }
+                
+            }
+        }
+    });
+}
+
+//- (void)updateStockSummary:(uint)codeid {
+//    lastStock = [[DBLite sharedInstance] getStockDataById:codeid];
+//    Board b = BoardRg;
+//    
+//    if([lastStock.code containsString:@"-R"])
+//        b = BoardTn;
+//    
+//    KiStockSummary *kiStockSummary = [[DBLite sharedInstance] getStockSummaryById:lastStock.id andBoard:b];
+//    [self refreshKiStockSummary:kiStockSummary];
+//}
+
+#pragma mark
+#pragma UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if(scrollView == scrollview) {
+        CGFloat pagewidth = scrollview.frame.size.width;
+        int page = floor((scrollView.contentOffset.x - pagewidth / 2) / pagewidth) + 1;
+        pagecontrol.currentPage = page;
+    }
+}
+
+
+#pragma mark
+#pragma UITableView Delegate & DataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if(tableView == tableLevel2 && nil != level2)
+        return MAX(level2.bid.count, level2.offer.count);
+    else if(tableView == tableLevel3 && nil != level3)
+        return level3.detail.count;
+    else if(tableView == tableTrade && nil != arrayKiTrade)
+        return arrayKiTrade.count;
+    
+    return 0;
+}
+
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if(tableView == tableLevel2) {
+        StockWatchLevel2Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
+        
+        if(nil == cell)
+            cell = [[StockWatchLevel2Cell alloc] init];
+        
+        long idx = indexPath.row;
+        //bid
+        if (idx < level2.bid.count) {
+            BuySell *bid = [level2.bid objectAtIndex:idx];
+            cell.bLabel.text = [NSString stringWithFormat:@"%i", bid.queue];
+            cell.lotLabel.text = currencyStringFromFloat(bid.volume);
+            cell.bidLabel.text = currencyStringFromFloat(bid.price);
+            
+            logDebug([NSString stringWithFormat:@"RENDER LEVEL2 BID LOT:%lld PRICE:%d", bid.volume, bid.price]);
+            
+            if(nil != currentKiStockSummary) {
+                if(bid.price > currentKiStockSummary.stockSummary.previousPrice) {
+                    cell.lotLabel.textColor = GREEN;
+                    cell.bidLabel.textColor = GREEN;
+                }
+                else if(bid.price < currentKiStockSummary.stockSummary.previousPrice) {
+                    cell.lotLabel.textColor = red;
+                    cell.bidLabel.textColor = red;
+                }
+                else {
+                    cell.lotLabel.textColor = yellow;
+                    cell.bidLabel.textColor = yellow;
+                }
+            }
+        }
+        else {
+            cell.bLabel.text = @"";
+            cell.lotLabel.text = @"";
+            cell.bidLabel.text = @"";
+        }
+        
+        if(idx < level2.offer.count) {
+            BuySell *offer = [level2.offer objectAtIndex:idx];
+            
+            cell.oLabel.text = [NSString stringWithFormat:@"%i", offer.queue];
+            cell.lot2Label.text = currencyStringFromFloat(offer.volume);
+            cell.offerLabel.text = currencyStringFromFloat(offer.price);
+            
+            logDebug([NSString stringWithFormat:@"RENDER LEVEL2 OFFER LOT:%@ PRICE:%@", cell.lot2Label.text, cell.offerLabel.text]);
+            
+            if(nil != currentKiStockSummary) {
+                if(offer.price > currentKiStockSummary.stockSummary.previousPrice) {
+                    cell.lot2Label.textColor = GREEN;
+                    cell.offerLabel.textColor = GREEN;
+                }
+                else if(offer.price < currentKiStockSummary.stockSummary.previousPrice) {
+                    cell.lot2Label.textColor = red;
+                    cell.offerLabel.textColor = red;
+                }
+                else {
+                    cell.lot2Label.textColor = yellow;
+                    cell.offerLabel.textColor = yellow;
+                }
+            }
+        }
+        else {
+            cell.oLabel.text = @"";
+            cell.lot2Label.text = @"";
+            cell.offerLabel.text = @"";
+        }
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        return cell;
+    }
+    else if(tableView == tableLevel3) {
+        StockWatchLevel3Cell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell2"];
+        
+        if(nil == cell)
+            cell = [[StockWatchLevel3Cell alloc] init];
+        
+        Level3Detail *detail = [level3.detail objectAtIndex:indexPath.row];
+
+        cell.priceLabel.text = currencyStringFromFloat(detail.price);
+        cell.blotLabel.text = currencyStringFromInt(detail.buyVolume);
+        cell.slotLabel.text = currencyStringFromInt(detail.sellVolume);
+        cell.lotLabel.text = currencyStringFromFloat(detail.buyVolume + detail.sellVolume);
+        
+        if(detail.price > currentKiStockSummary.stockSummary.previousPrice) {
+            cell.priceLabel.textColor = GREEN;
+            cell.blotLabel.textColor = GREEN;
+            cell.slotLabel.textColor = GREEN;
+            cell.lotLabel.textColor = GREEN;
+        }
+        else if(detail.price < currentKiStockSummary.stockSummary.previousPrice) {
+            cell.priceLabel.textColor = red;
+            cell.blotLabel.textColor = red;
+            cell.slotLabel.textColor = red;
+            cell.lotLabel.textColor = red;
+        }
+        else {
+            cell.priceLabel.textColor = yellow;
+            cell.blotLabel.textColor = yellow;
+            cell.slotLabel.textColor = yellow;
+            cell.lotLabel.textColor = yellow;
+        }
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        return cell;
+    }
+    else if(tableView == tableTrade) {
+        StockWatchTradeCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell3"];
+        
+        if(nil == cell)
+            cell = [[StockWatchTradeCell alloc] init];
+        
+        KiTrade *kiTrade = [arrayKiTrade objectAtIndex:(arrayKiTrade.count - 1 - indexPath.row)];
+        
+        KiBrokerData *buyer = [[DBLite sharedInstance] getBrokerDataById:kiTrade.buyerBrokerId];
+        KiBrokerData *seller = [[DBLite sharedInstance] getBrokerDataById:kiTrade.sellerBrokerId];
+        
+        
+        NSMutableString *time = [NSMutableString stringWithFormat:@"%i", kiTrade.trade.tradeTime];
+        if(5 == time.length)
+            [time insertString:@"0" atIndex:0];
+        
+        if(6 == time.length) {
+            [time insertString:@":" atIndex:2];
+            [time insertString:@":" atIndex:5];
+        }
+        
+        cell.timeLabel.text = time;
+        cell.priceLabel.text = currencyStringFromInt(kiTrade.trade.price);
+        cell.lotLabel.text = currencyStringFromInt(kiTrade.trade.volume / [AgentTrade sharedInstance].shares);
+        cell.bLabel.text = kiTrade.trade.buyerType == InvestorTypeD ? @"D" : @"F";
+        cell.sLabel.text = kiTrade.trade.sellerType == InvestorTypeD ? @"D" : @"F";
+        
+        if(nil != buyer)
+            cell.buyerLabel.text = buyer.code;
+        if(nil != seller)
+            cell.sellerLabel.text = seller.code;
+        
+        cell.buyerLabel.textColor = kiTrade.trade.buyerType == InvestorTypeD ? white : magenta;
+        cell.sellerLabel.textColor = kiTrade.trade.sellerType == InvestorTypeD ? white : magenta;
+        cell.bLabel.textColor = kiTrade.trade.buyerType == InvestorTypeD ? white : magenta;
+        cell.sLabel.textColor = kiTrade.trade.sellerType == InvestorTypeD ? white : magenta;
+        
+        int32_t close = currentKiStockSummary.stockSummary.previousPrice;
+        int32_t price = kiTrade.trade.price;
+        
+        if(price > close) {
+            cell.priceLabel.textColor = GREEN;
+            cell.lotLabel.textColor = GREEN;
+        }
+        else if(price < close) {
+            cell.priceLabel.textColor = red;
+            cell.lotLabel.textColor = red;
+        }
+        else {
+            cell.priceLabel.textColor = yellow;
+            cell.lotLabel.textColor = yellow;
+        }
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        return cell;
+    }
+    
+    return nil;
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    if(tableView == tableLevel2) {
+        StockWatchLevel2Cell *header = [[StockWatchLevel2Cell alloc] init];
+        
+        logDebug([NSString stringWithFormat:@"LEVEL2 HEADER %@, %@, %@, %@, %@, %@",
+                  header.bLabel.text, header.lotLabel.text, header.bidLabel.text, header.offerLabel.text, header.lot2Label.text, header.oLabel.text]);
+        
+        return header;
+    }
+    else if(tableView == tableLevel3) {
+        return [[StockWatchLevel3Cell alloc] init];
+    }
+    else if(tableView == tableTrade) {
+        return [[StockWatchTradeCell alloc] init];
+    }
+    
+    return nil;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 24;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 22;
+}
+
+@end
+
+
+
+
+
+@implementation StockWatchLevel2Cell
+
+@synthesize bLabel, lotLabel, bidLabel, offerLabel, lot2Label, oLabel;
+
+- (id)init
+{
+    if(self = [super init]) {
+        bLabel = labelOnTable(CGRectMake(2, 2, 35, 15));
+        lotLabel = labelOnTable(CGRectMake(40, 2, 50, 15));
+        bidLabel = labelOnTable(CGRectMake(100, 2, 45, 15));
+        offerLabel = labelOnTable(CGRectMake(164, 2, 45, 15));
+        lot2Label = labelOnTable(CGRectMake(217, 2, 50, 15));
+        oLabel = labelOnTable(CGRectMake(274, 2, 45, 15));
+        
+        bLabel.text = @"#B";
+        lotLabel.text = @"Lot";
+        bidLabel.text = @"Bid";
+        offerLabel.text = @"Offer";
+        lot2Label.text = @"Lot";
+        oLabel.text = @"#O";
+        
+        bLabel.font = [UIFont systemFontOfSize:14];
+        lotLabel.font = [UIFont systemFontOfSize:14];
+        bidLabel.font = [UIFont systemFontOfSize:14];
+        offerLabel.font = [UIFont systemFontOfSize:14];
+        lot2Label.font = [UIFont systemFontOfSize:14];
+        oLabel.font = [UIFont systemFontOfSize:14];
+        
+        self.backgroundColor = black;
+        
+        bLabel.adjustsFontSizeToFitWidth = YES;
+        lotLabel.adjustsFontSizeToFitWidth = YES;
+        bidLabel.adjustsFontSizeToFitWidth = YES;
+        offerLabel.adjustsFontSizeToFitWidth = YES;
+        lot2Label.adjustsFontSizeToFitWidth = YES;
+        oLabel.adjustsFontSizeToFitWidth = YES;
+        
+        [self addSubview:bLabel];
+        [self addSubview:lotLabel];
+        [self addSubview:bidLabel];
+        [self addSubview:offerLabel];
+        [self addSubview:lot2Label];
+        [self addSubview:oLabel];
+    }
+    
+    return self;
+}
+
+@end
+
+@implementation StockWatchLevel3Cell
+
+@synthesize priceLabel, blotLabel, slotLabel, lotLabel;
+
+- (id)init
+{
+    if(self = [super init]) {
+        priceLabel = labelOnTable(CGRectMake(0, 2, 75, 15));
+        blotLabel = labelOnTable(CGRectMake(83, 2, 75, 15));
+        slotLabel = labelOnTable(CGRectMake(162, 2, 75, 15));
+        lotLabel = labelOnTable(CGRectMake(245, 2, 74, 15));
+        
+        priceLabel.text = @"Price";
+        blotLabel.text = @"BLot";
+        slotLabel.text = @"SLot";
+        lotLabel.text = @"Lot";
+        
+        priceLabel.font = [UIFont systemFontOfSize:14];
+        blotLabel.font = [UIFont systemFontOfSize:14];
+        slotLabel.font = [UIFont systemFontOfSize:14];
+        lotLabel.font = [UIFont systemFontOfSize:14];
+        
+        slotLabel.adjustsFontSizeToFitWidth = YES;
+        blotLabel.adjustsFontSizeToFitWidth = YES;
+        
+        self.backgroundColor = black;
+        
+        [self addSubview:priceLabel];
+        [self addSubview:blotLabel];
+        [self addSubview:slotLabel];
+        [self addSubview:lotLabel];
+    }
+    
+    return self;
+}
+
+@end
+
+@implementation StockWatchTradeCell
+
+@synthesize timeLabel, priceLabel, lotLabel, bLabel, sLabel, buyerLabel, sellerLabel;
+
+- (id)init
+{
+    if(self = [super init]) {
+        timeLabel = labelOnTable(CGRectMake(0, 2, 47, 15));
+        priceLabel = labelOnTable(CGRectMake(50, 2, 62, 15));
+        lotLabel = labelOnTable(CGRectMake(114, 2, 45, 15));
+        bLabel = labelOnTable(CGRectMake(162, 2, 20, 15));
+        buyerLabel = labelOnTable(CGRectMake(189, 2, 50, 15));
+        sellerLabel = labelOnTable(CGRectMake(240, 2, 50, 15));
+        sLabel = labelOnTable(CGRectMake(293, 2, 20, 15));
+
+        
+        timeLabel.text = @"Time";
+        priceLabel.text = @"Price";
+        lotLabel.text = @"Lot";
+        bLabel.text = @"B";
+        sLabel.text = @"S";
+        buyerLabel.text = @"Buyer";
+        sellerLabel.text = @"Seller";
+        
+        priceLabel.font = [UIFont systemFontOfSize:14];
+        lotLabel.font = [UIFont systemFontOfSize:14];
+        bLabel.font = [UIFont systemFontOfSize:14];
+        sLabel.font = [UIFont systemFontOfSize:14];
+        buyerLabel.font = [UIFont systemFontOfSize:14];
+        sellerLabel.font = [UIFont systemFontOfSize:14];
+        
+        timeLabel.textAlignment = NSTextAlignmentLeft;
+        buyerLabel.textAlignment = NSTextAlignmentCenter;
+        sellerLabel.textAlignment = NSTextAlignmentCenter;
+        
+        timeLabel.adjustsFontSizeToFitWidth = YES;
+        
+        self.backgroundColor = black;
+         
+        [self addSubview:timeLabel];
+        [self addSubview:priceLabel];
+        [self addSubview:lotLabel];
+        [self addSubview:bLabel];
+        [self addSubview:sLabel];
+        [self addSubview:buyerLabel];
+        [self addSubview:sellerLabel];
+    }
+    
+    return self;
+}
+
+@end

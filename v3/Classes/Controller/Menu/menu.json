@@ -1,0 +1,30 @@
+[
+     {
+         "menu":"Securities",
+         "icon":null,
+         "identifier":"menu1",
+         "submenu":[
+                        {
+                            "title":"Running Trade",
+                            "icon":null,
+                            "identifier":"menu2"
+                        },
+                        {
+                            "title":"Top Stock",
+                            "icon":null,
+                            "identifier":"menu3"
+                        },
+                        {
+                            "title":"Net B/S by Broker",
+                            "icon":null,
+                            "identifier":"menu4"
+                        }
+                    ]
+     },
+     {
+         "menu":"Logout",
+         "icon":null,
+         "identifier":"menu5",
+         "submenu":[]
+     }
+ ]
